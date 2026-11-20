@@ -1,4 +1,4 @@
-<p align="center"><sub>AI 辅助中文译文，以<a href="../../README.md">英文原文为准</a> · <a href="https://aiengineeringfromscratch.com">aiengineeringfromscratch.com</a></sub></p>
+<p align="center"><sub><a href="../../zh-CN/README.md"><strong>进入中文课文目录，按课阅读或自测</strong></a> · <a href="../../README.md">英文项目介绍</a></sub></p>
 
 <p align="center">
   <picture>

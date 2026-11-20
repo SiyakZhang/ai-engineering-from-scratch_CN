@@ -1,0 +1,118 @@
+# 最小 Agent 工作台 · 自测
+
+每题先选答案，再展开解析。
+
+## 1. 哪三个文件构成了最小可用的工作台？
+
+- **A** Dockerfile、Makefile、.gitignore
+- **B** README.md、CHANGELOG.md、LICENSE
+- **C** model.py、prompts.py、tools.py
+- **D** AGENTS.md（路由）、agent_state.json（状态）、task_board.json（队列）
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　D
+
+一份简短的路由、持久状态和一个任务队列是底线。
+
+</details>
+
+## 2. 本课对 AGENTS.md 的定位是什么？
+
+- **A** 一个纯粹的 prompt 缓存键
+- **B** 一个不放进 repo 的秘密
+- **C** 一份 3000 行的入职手册
+- **D** 一份简短的路由，指向更深的文档以及状态和任务板
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　D
+
+AGENTS.md 是路由，不是手册；长手册会被忽略。
+
+</details>
+
+## 3. Augment Code 的数据关于一份好的 AGENTS.md 说了什么？
+
+- **A** 只有 Claude 会读它
+- **B** 一份好的 AGENTS.md 带来的质量跃升等同于从 Haiku 升级到 Opus；一份糟糕的则比没有这个文件还差
+- **C** 它没有可衡量的效果
+- **D** 长度总是有帮助
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+Augment Code 的测量：最好的文件是模型升级形态的，最差的比什么都没有还糟。
+
+</details>
+
+## 4. 为什么本课建议用文件支撑的状态而非聊天历史状态？
+
+- **A** 聊天历史是易失的；文件能在会话死亡、对话裁剪和工具重置中存活
+- **B** 文件更小
+- **C** 磁盘更便宜
+- **D** 这是 SOC 2 要求的
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+会话会死、聊天会被裁剪；文件是持久的记录系统。
+
+</details>
+
+## 5. 本课说当互相冲突的指令出现在 AGENTS.md 中时会发生什么？
+
+- **A** 冲突指令会悄悄把 agent 从交互模式降到贪心模式（AMBIG-SWE：解决率从 48.8% 降到 28%）
+- **B** 什么都不会
+- **C** 成本略升
+- **D** 延迟下降
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+AMBIG-SWE 测得出现矛盾时解决率大幅下降；改为给优先级编号。
+
+</details>
+
+## 6. 为什么本课建议用像 CLAUDE.md -> AGENTS.md 这样的跨工具符号链接？
+
+- **A** 这样单一的真相来源能扇出到每个编码 agent 而无需分叉
+- **B** 为了通过审计
+- **C** 为了省字节
+- **D** 为了满足 MIT
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+符号链接（或 Nx 风格的生成器）让 Claude Code、Codex、Cursor、Copilot 等共用一个规范来源。
+
+</details>
+
+## 7. 嵌套的 AGENTS.md 文件遵循什么模式？
+
+- **A** 只读取根文件
+- **B** 从工作文件向 repo 根走，把沿途找到的每个 AGENTS.md 拼接起来（最近的优先；子目录扩展根）
+- **C** 按字母顺序合并
+- **D** 随机选择
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+OpenAI 在其主仓库里放了 88 个 AGENTS.md 文件；工具按从最近到上层的顺序拼接。
+
+</details>
+
+
+[返回本课](docs/zh.md)

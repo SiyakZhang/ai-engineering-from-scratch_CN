@@ -1,0 +1,102 @@
+# 交叉编码器重排器 · 自测
+
+每题先选答案，再展开解析。
+
+## 1. bi-encoder 和 cross-encoder 在架构上的区别是什么？
+
+- **A** bi-encoder 用 cosine，cross-encoder 用点积
+- **B** bi-encoder 把 query 和 document 各自独立地 embed；cross-encoder 读取拼接后的 (query, document) 序列，并在两者之间做完整的 attention
+- **C** cross-encoder 只能在 GPU 上跑
+- **D** bi-encoder 是训练过的，cross-encoder 没训练过
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+正是跨拼接边界的 cross attention 赋予了 cross-encoder 的 precision；而 bi-encoder 从来不会同时看到 query 和 document。
+
+</details>
+
+## 2. 为什么 cross-encoder 不能在 1000 万文档的语料上充当主 retriever？
+
+- **A** 它每个 (query, document) 对都要做一次前向，相当于每个 query 要跑 1000 万次前向
+- **B** 它无法 embed 文本
+- **C** 它要求 CLS token 放在序列末尾
+- **D** 它不支持负分
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+在语料规模下吞吐会崩溃；cross-encoder 是每个 (query, document) 对跑一次，而不是像 bi-encoder 那样在建索引时每个文档跑一次。
+
+</details>
+
+## 3. 在「先 retrieve 再 rerank」的两阶段 pipeline 里，参数 N 的作用是什么？
+
+- **A** 它是词表大小
+- **B** 它是 cross-encoder 的隐藏维度
+- **C** 它是 bi-encoder 返回、交给 cross-encoder 重新打分的候选数量
+- **D** 它是 cross-encoder 的层数
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+N 是 rerank 的候选池；它既封顶了质量（cross-encoder 无法超过 bi-encoder 在 N 处的 recall），也决定了延迟（cross-encoder 要跑 N 次前向）。
+
+</details>
+
+## 4. 为什么必须把 N 取得严格大于 K（通常是 3 倍或更多）？
+
+- **A** cross-encoder 要求 N 是 K 的整数倍
+- **B** BM25 的 IDF 计算需要这样
+- **C** 如果 N 等于 K，cross-encoder 只能重新加权而无法重新排序，rerank 的增益会坍缩为零
+- **D** N 越小会降低 embedding 的维度
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+当 N = K 时没有任何东西可以重新排序；cross-encoder 唯一的工作就是从 N 个里挑出对的 K 个，这就需要 N > K。
+
+</details>
+
+## 5. 本课里 cross-encoder 的 mean-pooling head 做了什么？
+
+- **A** 在词表分布上做 pooling
+- **B** 把 embedding 的下标求和
+- **C** 在文档各位置上计算 softmax
+- **D** 对非 pad 位置上的最后一层输出取平均，再喂给单个线性 head 产出一个相关性标量
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　D
+
+先在非 pad 位置上做 mean-pool，再用单个线性层输出相关性分数；CLS-pooling 是质量相近的另一种做法。
+
+</details>
+
+## 6. 记录 rank-1 的 cross-encoder 分数有助于检测哪种生产失效模式？
+
+- **A** 网络中断
+- **B** tokenizer 的词表漂移
+- **C** 领域外（out-of-domain）query：当 top-1 的 reranker 分数低于某个语料相关的阈值时，模型其实在告诉你语料里没有任何东西真正回答了这个 query
+- **D** bi-encoder 的索引损坏
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+一个持续偏低的 rank-1 分数，是 cross-encoder 在告诉你召回的候选池里没有答案；应当把这个信号作为低置信度暴露给 LLM。
+
+</details>
+
+
+[返回本课](docs/zh.md)

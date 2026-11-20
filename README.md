@@ -1,3 +1,5 @@
+<p align="center"><sub><a href="i18n/zh/README.md"><strong>从这里开始读中文版</strong></a></sub></p>
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/readme/header-dark.svg">
@@ -38,7 +40,6 @@ npx skills add rohitg00/ai-engineering-from-scratch
 
 <p align="center">
   <a href="README.md">🇬🇧 English</a> ·
-  <a href="i18n/zh/README.md">🇨🇳 简体中文</a> ·
   <a href="i18n/zh-TW/README.md">🇹🇼 繁體中文（台灣）</a> ·
   <a href="i18n/ja/README.md">🇯🇵 日本語</a> ·
   <a href="i18n/ko/README.md">🇰🇷 한국어</a> ·

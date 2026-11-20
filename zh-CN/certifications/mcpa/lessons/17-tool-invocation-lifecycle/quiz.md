@@ -1,0 +1,102 @@
+# 工具调用生命周期 · 自测
+
+每题先选答案，再展开解析。
+
+## 1. 工具调用中的哪两个检查点不会自行产生 JSON-RPC 消息？
+
+- **A** 发现和列出，因为缓存意味着它们会被跳过
+- **B** 选择和确认，因为两者只发生在宿主内部
+- **C** 调用和结果，因为两者会合并到一次往返中
+- **D** 验证和执行，因为两者只发生在服务器上
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+选择是模型挑选工具，确认是宿主自己的批准门禁；两者都不是线路方法，因此都不会表现为请求或响应。
+
+</details>
+
+## 2. 一次 tools/call 指定了服务器从未注册的工具。按照 2026-07-28 规范，哪种响应正确？
+
+- **A** 返回 input_required 结果，要求客户端提供另一个工具名称
+- **B** 返回 isError 为 true 的完整结果，因为模型可以用新名称重试
+- **C** 返回代码为 -32602 的 JSON-RPC 错误，因为该工具从未注册
+- **D** 返回代码为 -32601 的 JSON-RPC 错误，因为方法本身未知
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+tools/call 方法本身已被正确识别，只有其中的工具名称无效，因此属于 Invalid params（-32602），而不是为未知方法保留的 -32601。
+
+</details>
+
+## 3. 调用 publish_release 时缺少一个必需参数。它会在哪里失败，又会如何报告？
+
+- **A** 在执行阶段失败，返回代码为 -32603 的 JSON-RPC 错误
+- **B** 在验证阶段失败，返回代码为 -32602 的 JSON-RPC 错误
+- **C** 在确认阶段失败，因为宿主应在发送调用前发现它
+- **D** 在执行阶段失败，返回 isError 设为 true 的完整结果
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　D
+
+验证只确认工具是否已知；缺失或格式错误的参数会在执行阶段按工具自己的 schema 检查时被发现，并作为可操作的 isError 结果返回。
+
+</details>
+
+## 4. 客户端对 get_build_status 的请求超时。结束这次调用的响应，其 resultType 是什么？
+
+- **A** 不存在这种结果：调用方只是停止等待
+- **B** "timed_out"，服务器专门为这种情况返回的 resultType
+- **C** "complete"，同时 isError 为 true，并附带超时消息
+- **D** "cancelled"，因为客户端已经放弃并关闭请求
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+超时和取消都不是 resultType；服务器无法再发送客户端仍关心的结果，因此调用方只会停止等待并继续后续工作。
+
+</details>
+
+## 5. get_build_status 正在轮询，流却在任何响应到达前中断。客户端下一步应该怎么做？
+
+- **A** 启动一个全新的构建，因为原句柄已永久失效
+- **B** 对同一句柄发送新的 id，因为 idempotentHint 表明这样做是安全的
+- **C** 复用同一个 JSON-RPC id，因为服务器仍在处理该请求
+- **D** 无限等待，因为中断的流会在连接恢复后自动续传
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+该传输没有可恢复机制，所以必须使用新 id 重发丢失的请求；get_build_status 标注了 idempotentHint true，因此在这里盲目重发是合理的。
+
+</details>
+
+## 6. publish_release 调用返回 input_required，客户端收集变更工单后重试。这次重试必须包含什么？
+
+- **A** 相同的 JSON-RPC id，以及客户端自行生成的新 requestState
+- **B** 只需新的 JSON-RPC id；requestState 绝不回传服务器
+- **C** 新的 JSON-RPC id、inputResponses，以及原样回传的 requestState
+- **D** 与第一次尝试相同的 JSON-RPC id，以便服务器匹配请求
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+重试是独立请求：它需要自己的新 id、与 inputRequests 键名匹配的 inputResponses，并且必须原样回传服务器给出的 requestState，不能自行编造，也不能复用旧 id。
+
+</details>
+
+
+[返回本课](docs/zh.md)

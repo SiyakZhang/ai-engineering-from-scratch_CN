@@ -1,0 +1,102 @@
+# GPT 模型组装 · 自测
+
+每题先选答案，再展开解析。
+
+## 1. 本课复现的 GPT-2 small 参考配置是什么？
+
+- **A** vocab 100000, context 2048, d_model 1024, 16 heads, 24 layers
+- **B** vocab 50257, context 1024, d_model 768, 12 heads, 12 layers, 参数量约 1.24 亿
+- **C** vocab 30000, context 512, d_model 512, 6 heads, 6 layers
+- **D** vocab 50000, context 4096, d_model 4096, 32 heads, 32 layers
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+GPT-2 small 是 124M 参数的配置；对上数字就能确认接线正确。
+
+</details>
+
+## 2. 在模型组装中，weight tying 是什么意思？
+
+- **A** 跨层共享的 bias 项
+- **B** token embedding 和 LM head 共享同一个参数 tensor；优化器更新的是一个矩阵，同时服务于查表和输出投影
+- **C** 对 attention head 的约束
+- **D** 两个形状相同的不同 tensor，每一步互相拷贝
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+设置 lm_head.weight = tok_embed.weight 共享的是存储；拷贝则不是。节省了 vocab × d_model 个参数。
+
+</details>
+
+## 3. 生成时如何滑动上下文窗口？
+
+- **A** 每一步取当前序列（prompt 加上已生成部分）的最后 context_length 个 token 送入模型
+- **B** 用零 pad 到最大上下文长度
+- **C** 每步都从 prompt 重新开始
+- **D** 每步截断到上下文的一半
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+当序列超出上下文长度时，sliding window 丢弃最早的 token。
+
+</details>
+
+## 4. 为什么 attention 输出投影和第二个 MLP linear 的初始化 std 比其他层更小？
+
+- **A** 两者都直接接到 residual add 上。把 std 缩放 1/sqrt(2 × num_layers) 可以让 residual stream 在 12 层中保持尺度稳定
+- **B** 数据集要求的
+- **C** 节省内存
+- **D** top-k sampling 需要更小的权重
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+不做缩放的话，residual stream 会随深度增长，把最后的 LayerNorm 推到危险区域。
+
+</details>
+
+## 5. 采样时 temperature 起什么作用？
+
+- **A** 选择优化器的学习率
+- **B** 缩放 embedding
+- **C** 在 softmax 前对 logits 做除法。T < 1 使分布更尖锐趋向 greedy，T = 1 保持模型原始分布，T > 1 使分布更平坦
+- **D** 给 head 加 dropout
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+temperature 是最简单的旋钮；配合 top-k 一起控制生成的探索性。
+
+</details>
+
+## 6. 采样前 top-k 过滤做了什么？
+
+- **A** 保留值最大的 k 个 logits，其余设为负无穷，然后在幸存者上做 softmax，多项式采样只在 top k 个 token 中选
+- **B** 移除所有小于零的 logits
+- **C** 把 logits 限幅在 k
+- **D** 选出最低的 k 个 logits
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+top-k 在 softmax 前截断长尾；top_k=1 就是 greedy，k 越大保留的多样性越多。
+
+</details>
+
+
+[返回本课](docs/zh.md)

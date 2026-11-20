@@ -1,0 +1,102 @@
+# Prompt 模板与参数补全 · 自测
+
+每题先选答案，再展开解析。
+
+## 1. 在 MCP 2026-07-28 中，由谁决定何时调用某个 prompt？
+
+- **A** 由用户明确选择，因为 prompt 设计为由用户控制
+- **B** 每当对话需要更多上下文时，由模型自动选择
+- **C** 由服务器按照固定的周期自动调度
+- **D** 由 host 在完全不询问用户或模型的情况下渲染
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+Prompt 由用户控制：服务器编写其内容，但何时运行由用户明确选择，通常通过菜单或斜杠命令完成。
+
+</details>
+
+## 2. 客户端对一个包含必填参数的 prompt 调用 prompts/get，却完全没有提供参数。符合规范的服务器应返回什么？
+
+- **A** 返回错误码 -32601 的 JSON-RPC 错误，因为 prompt 本身缺失
+- **B** 返回错误码 -32602 的 JSON-RPC 错误，因为缺少必填参数
+- **C** 返回 input_required 结果，让模型提供该值
+- **D** 返回普通结果，只是 messages 数组完全为空
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+缺少 prompt 的必填参数属于 Invalid params，应返回错误码 -32602；-32601 只用于服务器完全未实现某个方法的情况。
+
+</details>
+
+## 3. 某次 completion/complete 请求为一个参数匹配到 137 个可能值。结果的 values 数组包含多少个值，还必须报告什么？
+
+- **A** 零个值，因为可能匹配项超过 100 个时 completion 会拒绝请求
+- **B** 全部 137 个值，并附带 total 字段且 hasMore 为 false
+- **C** 最多 100 个值，并将 hasMore 设为 true，表示还有更多匹配项
+- **D** 默认恰好 10 个值，其余结果通过游标分页
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　C
+
+补全结果最多携带 100 个排序后的值；匹配项超过该上限时，还会将 hasMore 设为 true，告诉客户端列表已被截断。
+
+</details>
+
+## 4. 客户端正在补全 prompt 的第二个参数，并且已经确定了第一个参数。它应如何帮助服务器缩小建议范围？
+
+- **A** 把第一个参数重复写进当前待补全参数的 value 字段
+- **B** 先单独发送一次 tools/call，让服务器记住之前的答案
+- **C** 打开 subscriptions/listen 流，并把之前的答案发布到其中
+- **D** 在补全请求的 context.arguments 中携带之前的答案
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　D
+
+completion/complete 接受 context.arguments 映射，其中包含已经确定的参数名称和值，服务器可据此缩小当前参数的建议范围。
+
+</details>
+
+## 5. 一条 prompt 消息需要指向大型参考文件，但不能把文件字节内联进消息。哪种内容类型适合？
+
+- **A** 包含文件 uri、名称和 MIME 类型的 resource_link 块
+- **B** audio 块，因为资源引用只对声音内容有效
+- **C** 把整个文件复制为一长段内联文本的 text 块
+- **D** image 块，因为资源引用只对图片内容有效
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　A
+
+resource_link 内容块可通过 uri、名称和 MIME 类型指向资源，无需把资源的完整内容嵌入消息。
+
+</details>
+
+## 6. 客户端调用 prompts/list 时传入了一个服务器从未签发的 cursor。符合规范的服务器应如何处理？
+
+- **A** 静默忽略无效游标，并重新返回第一页
+- **B** 拒绝该请求，返回错误码 -32602 invalid params 的 JSON-RPC 错误
+- **C** 把游标视为有效，只返回空的 prompts 数组
+- **D** 建立全新连接并重新播放完整的 prompt 目录
+
+<details>
+<summary>查看答案与解析</summary>
+
+**答案**　B
+
+游标是服务器签发的不透明 token；服务器无法识别的游标属于无效参数，必须返回错误码 -32602。
+
+</details>
+
+
+[返回本课](docs/zh.md)
